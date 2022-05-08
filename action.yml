@@ -3,4 +3,4 @@ description: 'Shellcheck for sources'
 
 runs:
   using: 'docker'
-  image: 'docker/Dockerfile.test'
+  image: 'docker/Dockerfile'
