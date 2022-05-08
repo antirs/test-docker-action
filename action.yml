@@ -1,10 +1,6 @@
 name: 'shellcheck'
 description: 'Shellcheck for sources'
 
-env:
-  GITHUB_REPO: ${{ github.workspace }}
-
 runs:
   using: 'docker'
   image: 'docker/Dockerfile.test'
-  options: -v ${{ env.GITHUB_REPO }}:/opt/sh.wrap
