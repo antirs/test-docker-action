@@ -8,10 +8,6 @@ FROM build as base
 
 RUN mkdir /opt/sh.wrap
 
-ENTRYPOINT ["bash", "/opt/sh.wrap/test/tests.sh"]
-CMD ["src", "test"]
-# Build docker image:2 ends here
-
-FROM base as test
-
-COPY ./ /opt/sh.wrap/
+COPY entrypoint.sh entrypoint.sh
+ENTRYPOINT ["bash", "/entrypoint.sh"]
+CMD ["/opt/sh.wrap/", "test/tests.sh"]
