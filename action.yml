@@ -2,18 +2,22 @@ name: 'shellcheck'
 description: 'Shellcheck for sources'
 
 inputs:
-  workdir:
+  work_dir:
     description: 'Working directory'
     default: '/github/workspace'
   script:
     description: 'Script'
+    default: '/tests.sh'
   args:
     description: 'Arguments'
+    required: true
 
 runs:
   using: 'docker'
-  image: 'docker/Dockerfile'
+  image: 'test.Dockerfile'
   args:
-    - ${{ inputs.workdir }}
+    - ${{ inputs.work_dir }}
     - ${{ inputs.script }}
     - ${{ inputs.args }}
+  env:
+    GH_MODE: 1
