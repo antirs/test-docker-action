@@ -1,0 +1,27 @@
+name: 'Build hugo site'
+description: 'Build hugo site'
+
+inputs:
+  work_dir:
+    description: 'Working directory'
+    default: '/github/workspace'
+  script:
+    description: 'Script'
+    default: './doc/hugo-site.sh'
+  hugo_bin:
+    description: 'Hugo binary path'
+    default: './hugo/hugo'
+  docs_dir:
+    description: 'Directory with documentation in Emacs .org format'
+    default: './doc'
+
+runs:
+  using: 'docker'
+  image: '../../../hugo-site.Dockerfile'
+  args:
+    - ${{ inputs.work_dir }}
+    - ${{ inputs.script }}
+    - ${{ inputs.hugo_bin }}
+    - ${{ inputs.docs_dir }}
+  env:
+    GH_MODE: 1

@@ -1,0 +1,31 @@
+name: 'Publish site'
+description: 'Publish gh pages site'
+
+inputs:
+  work_dir:
+    description: 'Working directory'
+    default: '/github/workspace'
+  script:
+    description: 'Script'
+    default: './doc/gh-publish.sh'
+  gh_bin:
+    description: 'gh binary path'
+    default: './cli/bin/gh'
+  gh_repo:
+    description: 'Repository for gh pages'
+    required: true
+  site_dir:
+    description: 'Directory with site content'
+    default: './doc/site/public'
+
+runs:
+  using: 'docker'
+  image: '../../../gh-publish.Dockerfile'
+  args:
+    - ${{ inputs.work_dir }}
+    - ${{ inputs.script }}
+    - ${{ inputs.gh_bin }}
+    - ${{ inputs.gh_repo }}
+    - ${{ inputs.site_dir }}
+  env:
+    GH_MODE: 1

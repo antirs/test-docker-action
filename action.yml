@@ -1,0 +1,92 @@
+name: 'Build hugo site'
+description: 'Build hugo site'
+
+inputs:
+  work_dir:
+    description: 'Working directory'
+    default: '/github/workspace'
+  docs_dir:
+    description: 'Directory with documentation in Emacs .org format'
+    default: './doc'
+  DOCKERFILES_PATH:
+    default: "./docker"
+  DOCKER_PATH: 
+    default: "."
+  HUGO_BIN:
+    default: "./hugo/hugo"
+  HUGO_BIN_DEST:
+    default: "/go/hugo"
+  HUGO_REPO_HASH:
+    default: "bfebd8c02cfc0d4e4786e0f64932d832d3976e92"
+  GH_BIN:
+    default: "./cli/bin/gh"
+  GH_BIN_DEST:
+    default: "/go/gh"
+  GH_REPO_HASH:
+    default: "7d71f807c48600d0d8d9f393ef13387504987f1d"
+
+runs:
+  using: 'composite'
+  steps:
+    - id: hugo-cache
+      name: Cache hugo binary
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.HUGO_BIN }}
+        key: ${{ runner.os }}-build-hugo-${{ inputs.HUGO_REPO_HASH }}
+    - id: gh-cache
+      name: Cache gh binary
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.GH_BIN }}
+        key: ${{ runner.os }}-build-gh-${{ inputs.GH_REPO_HASH }}
+    - name: Generate dockerfile for hugo-build
+      shell: bash
+      env:
+        DOCKERFILE_TEMPLATE: ${{ inputs.DOCKERFILES_PATH }}/"go-build.Dockerfile"
+        DOCKERFILE: ${{ inputs.DOCKER_PATH }}/"go-build.Dockerfile"
+      run: |
+        env -i DOCKERFILES_PATH=${{ inputs.DOCKERFILES_PATH }} \
+            bash ${{ inputs.DOCKERFILES_PATH }}/dockerfile.sh \
+                 ${{ env.DOCKERFILE_TEMPLATE }} ${{ env.DOCKERFILE }}
+    - if: ${{ steps.hugo-cache.outputs.cache-hit != 'true' }}
+      continue-on-error: true
+      id: hugo-build
+      name: Build hugo
+      uses: './.github/actions/go-build'
+      with:
+        git_repo: 'https://github.com/gohugoio/hugo'
+        git_hash: ${{ inputs.HUGO_REPO_HASH}}
+    - if: ${{ steps.gh-cache.outputs.cache-hit != 'true' }}
+      continue-on-error: true
+      id: gh-build
+      name: Build gh
+      uses: './.github/actions/go-build'
+      with:
+        git_repo: 'https://github.com/cli/cli'
+        git_hash: ${{ inputs.GH_REPO_HASH}}
+    - name: Generate dockerfile for hugo-site
+      shell: bash
+      env:
+        DOCKERFILE_TEMPLATE: ${{ inputs.DOCKERFILES_PATH }}/"hugo-site.Dockerfile"
+        DOCKERFILE: ${{ inputs.DOCKER_PATH }}/"hugo-site.Dockerfile"
+      run: |
+        env -i DOCKERFILES_PATH=${{ inputs.DOCKERFILES_PATH }} \
+               HUGO_BIN=${{ inputs.HUGO_BIN }} \
+               HUGO_BIN_DEST=${{ inputs.HUGO_BIN_DEST }} \
+            bash ${{ inputs.DOCKERFILES_PATH }}/dockerfile.sh \
+                 ${{ env.DOCKERFILE_TEMPLATE }} ${{ env.DOCKERFILE }}
+    - id: hugo-site
+      name: Build hugo site
+      uses: './.github/actions/hugo-site'
+    - name: Generate dockerfile for gh-publish
+      shell: bash
+      env:
+        DOCKERFILE_TEMPLATE: ${{ inputs.DOCKERFILES_PATH }}/"gh-publish.Dockerfile"
+        DOCKERFILE: ${{ inputs.DOCKER_PATH }}/"gh-publish.Dockerfile"
+      run: |
+        env -i DOCKERFILES_PATH=${{ inputs.DOCKERFILES_PATH }} \
+               GH_BIN=${{ inputs.GH_BIN }} \
+               GH_BIN_DEST=${{ inputs.GH_BIN_DEST }} \
+            bash ${{ inputs.DOCKERFILES_PATH }}/dockerfile.sh \
+                 ${{ env.DOCKERFILE_TEMPLATE }} ${{ env.DOCKERFILE }}

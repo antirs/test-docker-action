@@ -1,0 +1,4 @@
+cli/.cache
+cli/.go
+hugo/.cache
+hugo/.go

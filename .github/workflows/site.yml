@@ -1,0 +1,37 @@
+name: Build hugo site
+
+concurrency:
+  group: ${{ github.ref }}-site
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
+    branch:
+      - actions-hugo-site
+
+permissions:
+  contents: write
+
+jobs:
+  hugo-site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: hugo-site
+        name: Build hugo
+        uses: antirs/test-docker-action@actions-hugo-site
+      - if: ${{ github.event_name }} == 'push'
+        id: gh-publish
+        name: Publish site
+        uses: './.github/actions/gh-publish'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIVE_DEBUG: 1
+        with:
+          gh_repo: 'https://github.com/antirs/test-docker-action'
