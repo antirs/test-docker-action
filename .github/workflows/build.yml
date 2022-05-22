@@ -1,0 +1,30 @@
+name: Build hugo
+
+concurrency:
+  group: ${{ github.ref }}-build
+  cancel-in-progress: true
+
+permissions: {}
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
+    branch:
+      - actions-hugo-build
+
+jobs:
+  hugo-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: hugo-build
+        name: Build hugo
+        uses: antirs/test-docker-action@actions-hugo-build
+      - name: Echo hugo binary path
+        run: |
+          echo "${{ steps.hugo-build.outputs.hugo_bin }}"

@@ -1,0 +1,23 @@
+name: 'Build hugo'
+description: 'Build hugo binary from sources'
+
+inputs:
+  work_dir:
+    description: 'Working directory'
+    default: '/github/workspace'
+  script:
+    description: 'Script'
+    default: './doc/hugo-build.sh'
+  hugo_dir:
+    description: 'Working directory for hugo build'
+    default: './'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.work_dir }}
+    - ${{ inputs.script }}
+    - ${{ inputs.hugo_dir }}
+  env:
+    GH_MODE: 1
