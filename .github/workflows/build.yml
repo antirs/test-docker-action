@@ -1,0 +1,32 @@
+name: Build go binary
+
+concurrency:
+  group: ${{ github.ref }}-build
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+  push:
+    branch:
+      - actions-go-build
+
+permissions:
+  contents: write
+
+jobs:
+  hugo-site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: go-build
+        name: Build go binary
+        uses: antirs/test-docker-action@actions-go-build
+        with:
+          git_bin: "./hugo/hugo"
+          git_repo: "https://github.com/gohugoio/hugo"
+          git_hash: "bfebd8c02cfc0d4e4786e0f64932d832d3976e92"

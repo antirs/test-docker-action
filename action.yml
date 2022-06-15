@@ -1,0 +1,44 @@
+name: 'Build go repository'
+description: 'Build go binary from sources'
+
+inputs:
+  git_bin:
+    required: true
+  git_repo:
+    description: 'Go repository to build'
+    required: true
+  git_hash:
+    description: 'Repository commit hash'
+    required: true
+  DOCKERFILES_PATH:
+    default: "./docker"
+  DOCKER_PATH:
+    default: "."
+
+runs:
+  using: 'composite'
+  steps:
+    - id: go-cache
+      name: Cache go binary
+      uses: actions/cache@v3
+      with:
+        path: ${{ inputs.git_bin }}
+        key: ${{ runner.os }}-build-go-${{ inputs.git_hash }}
+    - name: Generate dockerfile for go-build
+      shell: bash
+      env:
+        DOCKERFILE_TEMPLATE: ${{ inputs.DOCKERFILES_PATH }}/"go-build.Dockerfile"
+        DOCKERFILE: ${{ inputs.DOCKER_PATH }}/"go-build.Dockerfile"
+      run: |
+        env -i DOCKERFILES_PATH=${{ inputs.DOCKERFILES_PATH }} \
+            bash ${{ github.action_path }}/${{ inputs.DOCKERFILES_PATH }}/dockerfile.sh \
+                 ${{ github.action_path }}/${{ env.DOCKERFILE_TEMPLATE }} ${{ github.action_path }}/${{ env.DOCKERFILE }}
+    - if: ${{ steps.go-cache.outputs.cache-hit != 'true' }}
+      id: go-build
+      name: Build go binary
+      uses: antirs/test-docker-action/.github/actions/go-build@actions-go-build
+      with:
+        git_repo: ${{ inputs.git_repo }}
+        git_hash: ${{ inputs.git_hash }}
+      env:
+        GH_MODE: 1

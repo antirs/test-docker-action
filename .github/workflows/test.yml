@@ -1,0 +1,33 @@
+name: Test shellcheck
+
+concurrency:
+  group: ${{ github.ref }}-test
+  cancel-in-progress: true
+
+permissions: {}
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    paths:
+      - '**.sh'
+  push:
+    branch:
+      - actions-go-build
+    paths:
+      - '**.sh'
+
+jobs:
+  test-shellcheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: antirs/test-docker-action@actions-shellcheck
+        with:
+          args: |
+            doc
+            docker
