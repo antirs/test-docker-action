@@ -1,0 +1,8 @@
+name: Test reusable action
+
+on:
+  push:
+
+jobs:
+  use-action:
+    uses: antirs/test-docker-action/.github/workflows/reusable-1.yml@actions-reusable
