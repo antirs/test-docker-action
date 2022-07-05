@@ -1,0 +1,12 @@
+name: 'Action #1'
+
+inputs:
+  script:
+    description: 'Script'
+    default: './docker/entrypoint.sh'
+
+runs:
+  using: 'docker'
+  image: '../../../Dockerfile'
+  args:
+    - ${{ inputs.script }}
